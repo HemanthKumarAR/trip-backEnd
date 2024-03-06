@@ -11,7 +11,7 @@ vehicleCltr.addVehicle = async (req, res) => {
   const errors = validationResult(req)
   if (!errors.isEmpty()) {
     res.status(400).json({ errors: errors.array() })
-  } 
+  } else{
 
   const body = _.pick(req.body, [
     "vehicleNumber",
@@ -28,36 +28,40 @@ vehicleCltr.addVehicle = async (req, res) => {
     "licenseTitle",
     "insuranceTitle"
   ])
-    // console.log(req.files.vehicleImage[0].filename)
-    // console.log(req.files.rcImage[0].filename)
-    try{
-        const vehicle=  new Vehicle(body)
-        
-        vehicle.driverId=req.user.id
-        vehicle.images=[
-          {
-            tittle:body.vehicleTitle,
-            image:req.files.vehicleImage[0].filename
-          },
-          {
-            tittle:body.rcTitle,
-            image:req.files.rcImage[0].filename
-          },
-          {
-            tittle:body.licenseTitle,
-            image:req.files.licenseImage[0].filename
-          },
-          {
-            tittle:body.insuranceTitle,
-            image:req.files.insuranceImage[0].filename
-          }
-        ]
-        await vehicle.save()
-        res.status(201).json(vehicle) 
-    }catch(e){
-      res.status(500).json(e)
-    }
+  // console.log(req.files.vehicleImage[0].filename)
+  // console.log(req.files.rcImage[0].filename)
+  try {
+    console.log(body, 'body')
+    const vehicle = new Vehicle(body)
+
+    vehicle.driverId = req.user.id
+    vehicle.images = [
+      {
+        tittle: body.vehicleTitle,
+        image: req.files.vehicleImage[0].filename
+      },
+      {
+        tittle: body.rcTitle,
+        image: req.files.rcImage[0].filename
+      },
+      {
+        tittle: body.licenseTitle,
+        image: req.files.licenseImage[0].filename
+      },
+      {
+        tittle: body.insuranceTitle,
+        image: req.files.insuranceImage[0].filename
+      }
+    ]
+   const vehicleResponse= await vehicle.save()
+    // console.log(vehicleResponse)
+    res.status(201).json(vehicleResponse)
+  } catch (e) {
+    res.status(500).json(e)
+  }
 }
+}
+
 
 
 
@@ -66,10 +70,10 @@ vehicleCltr.addVehicle = async (req, res) => {
 vehicleCltr.getProfile = async (req, res) => {
   console.log('api is working')
   const id = req.user.id
-  
+
   console.log(id)
   try {
-    const driverVehicle = await Vehicle.find({ driverId: req.user.id})
+    const driverVehicle = await Vehicle.find({ driverId: req.user.id })
     res.json(driverVehicle)
   } catch (e) {
     res.status(500).json(e)
@@ -86,34 +90,36 @@ vehicleCltr.getProfile = async (req, res) => {
 //   }
 
 //getting My vehicle 
-vehicleCltr.myVehicle=async(req,res)=>{
-console.log('api working')
+vehicleCltr.myVehicle = async (req, res) => {
+  console.log('api working')
 }
+
+
+
+//delete My vehicle 
+vehicleCltr.removeVehicle = async (req, res) => {
+  console.log('api is working')
+  const vehicleId = req.params.id
+  try {
+    const deletedvehicle = await Vehicle.findOneAndDelete({ _id: vehicleId, driverId: req.user.id })
+    return res.json(deletedvehicle)
+  } catch (e) {
+    res.status(500).json(e)
+  }
+
+
+}
+
 
 vehicleCltr.list = async (req, res) => {
   console.log('api is working')
   try {
-    const listVehicles = await Vehicle.find({ vehicleApproveStatus: false })
+    const listVehicles = await Vehicle.find({ vehicleApproveStatus: false }).populate('driverId')
     res.json(listVehicles)
   } catch (e) {
     res.status(500).json(e)
   }
 }
-
-//delete My vehicle 
-vehicleCltr.removeVehicle=async(req,res)=>{
-  console.log('api is working')
-  const vehicleId=req.params.id
-  try{
-    const deletedvehicle= await Vehicle.findOneAndDelete({_id:vehicleId,driverId:req.user.id})
-    return res.json(deletedvehicle)
-  }catch(e){
-    res.status(500).json(e)
-  }
-
-
-}
-
 //approve 
 vehicleCltr.approve = async (req, res) => {
   try {
@@ -134,7 +140,7 @@ vehicleCltr.reject = async (req, res) => {
     const vehicle = await Vehicle.findByIdAndDelete(id)
     res.json(vehicle)
   } catch (e) {
-      res.status(500).json(e)
+    res.status(500).json(e)
   }
 }
 
@@ -161,15 +167,20 @@ vehicleCltr.searchBySeat = async (req, res) => {
         $and: [
           { address: { $in: location.split(',') } },
           { seating: { $in: seats.split(',') } },
-          { vehicleApproveStatus: true }
+          { vehicleApproveStatus: true },
+          // { travelStatus: 'completed' }
+
+
         ]
       });
     } else if (seats) {
-      
+
       results = await Vehicle.find({
         $and: [
           { seating: { $all: seats.split(',') } },
-          { vehicleApproveStatus: true } // Check for vehicleApproveStatus
+          { vehicleApproveStatus: true },// Check for vehicleApproveStatus
+          // { travelStatus: 'completed' }
+
         ]
       })
     } else if (location) {
@@ -180,7 +191,9 @@ vehicleCltr.searchBySeat = async (req, res) => {
       results = await Vehicle.find({
         $and: [
           { address: { $all: locationsArray } },
-          { vehicleApproveStatus: true } // Check for vehicleApproveStatus
+          { vehicleApproveStatus: true },// Check for vehicleApproveStatus
+          // { travelStatus: 'completed' }
+
         ]
       });
     }

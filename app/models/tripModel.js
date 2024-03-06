@@ -26,25 +26,41 @@ const tripSchema=new Schema({
     
     pickUplocation:{
         address:String, //address 
-        pickCoordinate:[]
+        pickCoordinate:[],
+       
          
     },
     dropOfflocation:{
         address:String,
-        dropCoordinate:[String]
+        dropCoordinate:[],
+       
     },
-    // coordinates: {
-    //     type: { pickUpcoordinate: [], dropCoordinate: [] },
-    //   },
-      
+    
+    tripStatus: {
+        type: String,
+        enum: ["bookingPlaced", "driverConfirm", "driverDelyed", "paymentPending","paymentCompleted",'inProgress','Completed'],
+        default: "bookingPlaced"
+      },
     totalDistance:Number,
 
-    totalAmount:String,
+    totalAmount:Number,
+
+      startOtp: {
+        type: String,
+        default: null,
+      },
+      
+      endOtp:{
+        type: String,
+        default: null,
+      },
 
     paymentStatus: {
         type:Boolean,
         default:false
-    }
+    },
+    rejectReason:String,
+
 
     
 }, { timestamps: true })

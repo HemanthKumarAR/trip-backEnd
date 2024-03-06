@@ -162,19 +162,7 @@ const passwordSchema = {
       },
     },
     mobileNumber: {
-      // notEmpty: notEmptyGenerator("mobile number"),
-      // isAlphanumeric: {
-      //   errorMessage: "please enter the number not string",
-      //   bail: true,
-      // },
-      // isLength: {
-      //   options: {
-      //     min: 10,
-      //     max: 10,
-      //   },
-      //   errorMessage: "invalid mobile number",
-      //   bail: true,
-      // },
+     
       isNumeric: {
         errorMessage: "Enter numbers only", 
         bail:true

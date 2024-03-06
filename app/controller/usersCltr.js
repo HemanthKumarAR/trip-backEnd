@@ -37,10 +37,10 @@ usersCltr.login=async(req,res)=>{
     const errors=validationResult(req)  
     if( !errors.isEmpty()){
         res.status(400).json({errors:errors.array()})
-     }
-     const body = _.pick(req.body, ['email', 'password']) 
-     console.log(body)
-     try{
+     }else{
+      const body = _.pick(req.body, ['email', 'password']) 
+      console.log(body)
+      try{
         const user = await User.findOne({ email: body.email })
         
         if(!user) {
@@ -65,6 +65,11 @@ usersCltr.login=async(req,res)=>{
         res.status(500).json(e)
     
      }
+
+     }
+
+    
+    
 }
 
 usersCltr.profile=async(req,res)=>{

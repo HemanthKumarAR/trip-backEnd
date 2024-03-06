@@ -11,31 +11,27 @@ const User = require('../models/userModel')
 const paymentCltr = {};
 
 paymentCltr.paymentCheckoutSession = async (req, res) => {
-  //   const errors = validationResult(req);
-  //   if (!errors.isEmpty()) {
-  //     return res.status(400).json({ error: errors.array() });
-  //   }
-  //    else {
+ 
   console.log('api is working')
-  const body = _.pick(req.body)
+  // const body = _.pick(req.body)
 
   const { tripId } = req.params
   console.log(tripId, "id")
   try {
 
     const tripBook = await Trip.findOne({ _id: tripId, customerId: req.user.id }).populate('customerId').populate('vehicleId')
-    console.log(tripBook.totalAmount)
-
-
-
+    // console.log(tripBook.totalAmount)
+    // console.log(tripBook.pickUplocation)
+    // const tripInfo=`from ${tripBook.pickUplocation} to ${tripBook.dropOfflocation}`
+    // console.log(tripInfo)
+  
     if (!tripBook) {
       return res.status(404).json({ error: tripBook, message: "Cannot find the booked event" });
     }
 
-
     const customer = await stripe.customers.create({
       // name: profile.userId.username,
-      name: "One day trip",
+      name: "MyTrip",
       address: {
         line1: 'India',
         postal_code: '560002',
@@ -46,25 +42,7 @@ paymentCltr.paymentCheckoutSession = async (req, res) => {
     })
 
     const locationDetails = `From  ${tripBook.pickUplocation.address} to${tripBook.dropOfflocation.address} `
-    // const session = await stripe.checkout.sessions.create({
-    //     payment_method_types: ["card"],
-    //     mode: "payment",
-    //     line_items: [
-    //       {
-    //         price_data: {
-    //           currency: "inr",
-    //           product_data: {
-    //             name: locationDetails, // You should replace this with the actual product name
-    //           },
-    //           unit_amount: tripBook.totalAmount, // Make sure this is in the smallest currency unit (cents for INR)
-    //         },
-    //         quantity: 1,
-    //       }
-    //     ],
-    //     customer: customer.id,
-    //     success_url: `${process.env.SERVER_URL}/success`,
-    //     cancel_url: `${process.env.SERVER_URL}/cancel`,
-    //   });
+   
     console.log('start')
     const session = await stripe.checkout.sessions.create({
 
@@ -75,9 +53,9 @@ paymentCltr.paymentCheckoutSession = async (req, res) => {
           price_data: {
             currency: "inr",
             product_data: {
-              name: "Product Name", // You should replace this with the actual product name
+              name: locationDetails, // You should replace this with the actual product name
             },
-            unit_amount: 1000// Use totalAmountInPaise as the unit amount
+            unit_amount:Math.round(tripBook.totalAmount * 100)// Use totalAmountInPaise as the unit amount
           },
           quantity: 1,
         }
@@ -110,36 +88,35 @@ paymentCltr.paymentCheckoutSession = async (req, res) => {
   // }
 };
 
-// paymentCltr.updatedPayment = async(req,res)=>{
-//   const {stripeId} = req.body
-//   try{
-//     console.log("1")
-//     const payment = await PaymentModel.findOneAndUpdate(
-//       { transaction_Id: stripeId },
-//       { status: true },
-//       { new: true }
-//     );
-//         console.log(payment,"paymentInfo")
-//     if(payment.status === true){
-//       console.log("2")
-//       const booking = await BookingModel.findOneAndUpdate({_id:payment.bookingId},{status:true},)
-//         console.log(booking._id,"id")
+paymentCltr.updatePayment = async(req,res)=>{
+  const {stripeId} = req.body
+  try{
+    console.log("1",stripeId)
+    const payment = await Payment.findOneAndUpdate(
+      { transaction_Id: stripeId },
+      { status: true },
+      { new: true }
+    );
+        console.log(payment,"paymentInfo")
+    if(payment.status === true){
+      console.log("2")
+      const tripUpdate = await Trip.findOneAndUpdate(
+        {_id:payment.tripId},
+        {paymentStatus:true,tripStatus:'paymentCompleted'},
+        { new: true }
+        )
+        console.log(tripUpdate._id,"id")
 
-//         const updatedProfile = await ProfileModel.findOneAndUpdate(
-//           { userId: req.user.id },
-//           { $push: { bookings: booking._id } }
-//         ) 
+      
+      res.status(200).json("Payment Successfull", tripUpdate.totalAmount,"Rs")
+    }
+    if(!payment) return res.status(404).json("Cannot find the Payment Info")
 
-
-//       res.status(200).json("Payment Successfull", booking.totalAmount,"Rs")
-//     }
-//     if(!payment) return res.status(404).json("Cannot find the Payment Info")
-
-//   } catch(err){
-//     console.log(err)
-//     return res.status(500).json(err)
-//   }
-// }
+  } catch(err){
+    console.log(err)
+    return res.status(500).json(err)
+  }
+}
 
 // paymentCltr.updatedPayment = async (req, res) => {
 //   const { transactionId } = req.body;
@@ -190,6 +167,8 @@ paymentCltr.paymentCheckoutSession = async (req, res) => {
 //     return res.json(EvalError)
 //   }
 // }
+
+
 
 
 

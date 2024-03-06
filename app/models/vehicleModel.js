@@ -96,8 +96,6 @@ const vehicleSchema=new Schema({
   }
 ],
 
-    
-
     vehicleName:String,
 
     vehicleModel:String,
@@ -125,14 +123,9 @@ const vehicleSchema=new Schema({
       default: "pending"
     },
     
-    // vehicleType:String, name
-
-    // address:{
-    //   district: String,
-    //   taluk:String
-    // }
+    
     address:String
-    // profilePic:String, 
+    
 },{ timestamps: true })
 
 const Vehicle=model("Vehicle",vehicleSchema)

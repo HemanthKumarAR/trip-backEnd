@@ -1,8 +1,10 @@
 const jwt=require('jsonwebtoken')
 const authenticUser=(req,res,next)=>{
-    const token=req.headers['authorization']
+    const token=req.headers['authorization'] 
+    // const token='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1YmI1ZDU5MTQ3Nzk3YmM1OGI5NTk3MiIsInJvbGUiOiJjdXN0b21lciIsImlhdCI6MTcwODk0MjE0NSwiZXhwIjoxNzEwMTUxNzQ1fQ.7IW7xKysSnm2uvbDMdmc9JVhVzKkwZRFzs6AhAayXIQ'
     // console.log(token)
     if( !token){
+
         return res.status(400).json({error:'JWT is missing'})
       }
       try{
